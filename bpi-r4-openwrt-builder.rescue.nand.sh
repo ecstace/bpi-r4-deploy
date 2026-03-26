@@ -1,27 +1,16 @@
 #!/bin/bash
-set -euo pipefail
 
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-
-if [ -n "$OPENWRT_COMMIT" ] && [ "$OPENWRT_COMMIT" != "latest" ]; then
-    cd openwrt; git checkout "$OPENWRT_COMMIT"; cd -;
-else
-    cd openwrt; git checkout c2fe6ca16d0e6c9ec31da709d44263efdf12a3c1; cd -;  #OpenWrt v25.12.0: revert to branch defaults
-fi
+cd openwrt; git checkout f505120278fdb752586853f4df7482150d0add3b; cd -;		#ipq40xx: fix art partition name WHW03 V1
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-
-if [ -n "$MTK_COMMIT" ] && [ "$MTK_COMMIT" != "latest" ]; then
-    cd mtk-openwrt-feeds; git checkout "$MTK_COMMIT"; cd -;
-else
-    cd mtk-openwrt-feeds; git checkout b0fefe65a28d5a5b938c9c197d6bbe729484ffef; cd -;  #[kernel-5.4/6.12][mt7988][eth][linux-firmware: mediatek: Revert firmware wrongly updated]
-fi
+cd mtk-openwrt-feeds; git checkout 07ef2962013b19a4a1e9f8c34a21c1e90be691ce; cd -;	#[MAC80211][WiFi6/7/8][app][Fix iwpriv/ated script]
 
 cd openwrt
-bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic prepare
+bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic prepare 
 
 scripts/feeds uninstall crypto-eip pce tops-tool
 
@@ -31,7 +20,7 @@ scripts/feeds uninstall crypto-eip pce tops-tool
 mkdir -p files/root/bpi-r4-install
 #\cp ../my_files/bpi-r4-install/snand-img.bin files/root/bpi-r4-install/
 #\cp ../my_files/bpi-r4-install/install-nand.sh files/root/bpi-r4-install/
-\cp ../my_files/bpi-r4-install/install-emmc.sh files/root/bpi-r4-install/
+#\cp ../my_files/bpi-r4-install/install-emmc.sh files/root/bpi-r4-install/
 #chmod +x files/root/bpi-r4-install/install-nand.sh
 chmod +x files/root/bpi-r4-install/install-emmc.sh
 
@@ -45,4 +34,8 @@ EOF
 \cp -r ../configs/rescue.defconfig .config
 make defconfig
 
+
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic build
+
+exit
+

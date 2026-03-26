@@ -669,7 +669,7 @@ define Device/bananapi_bpi-r4-common
 	mt7988a-bananapi-bpi-r4-spim-nand-nmbm
   DEVICE_DTC_FLAGS := --pad 4096
   DEVICE_PACKAGES := kmod-hwmon-pwmfan kmod-i2c-mux-pca954x kmod-eeprom-at24 \
-		    kmod-rtc-pcf8563 kmod-sfp kmod-usb3 e2fsprogs f2fsck mkf2fs mt7988-wo-firmware
+		     kmod-rtc-pcf8563 kmod-sfp kmod-phy-aquantia kmod-usb3 e2fsprogs f2fsck mkf2fs mt7988-wo-firmware
   DEVICE_COMPAT_VERSION := 1.1
   DEVICE_COMPAT_MESSAGE := The non-switch ports were renamed to match the board/case labels
   KERNEL_LOADADDR := 0x46000000
@@ -704,6 +704,7 @@ define Device/bananapi_bpi-r4-common
 				  pad-to 64M | append-image squashfs-sysupgrade.itb | check-size |\
 				) \
 				  gzip
+
 
   KERNEL := kernel-bin | gzip
   KERNEL_INITRAMFS := kernel-bin | lzma | \
@@ -746,14 +747,15 @@ define Device/bananapi_bpi-r4-lite
   DEVICE_MODEL := BPi-R4 Lite
   DEVICE_DTS := mt7987a-bananapi-bpi-r4-lite
   DEVICE_DTS_OVERLAY:= \
-	mt7987-spim2-nand \
-	mt7987-spim2-nand-nmbm \
-	mt7987-spim-nor \
-	mt7987-emmc \
-	mt7987-sd \
+	mt7987a-bananapi-bpi-r4-lite-nand \
+	mt7987a-bananapi-bpi-r4-lite-nand-nmbm \
+	mt7987a-bananapi-bpi-r4-lite-nor \
+	mt7987a-bananapi-bpi-r4-lite-emmc \
+	mt7987a-bananapi-bpi-r4-lite-sd \
 	mt7987a-bananapi-bpi-r4-lite-1pcie-2L \
 	mt7987a-bananapi-bpi-r4-lite-2pcie-1L \
 	mt7987-spidev
+  DEVICE_DTS_CONFIG := config-mt7987a-bananapi-bpi-r4-lite
   DEVICE_DTC_FLAGS := --pad 4096
   DEVICE_DTS_DIR := $(DTS_DIR)/
   DEVICE_DTS_LOADADDR := 0x4ff00000
@@ -1103,7 +1105,7 @@ TARGET_DEVICES += cudy_ap3000-v1
 define Device/cudy_m3000-v1
   DEVICE_VENDOR := Cudy
   DEVICE_MODEL := M3000
-  DEVICE_VARIANT := v1
+  DEVICE_VARIANT := v1/v2
   DEVICE_DTS := mt7981b-cudy-m3000-v1
   DEVICE_DTS_DIR := ../dts
   SUPPORTED_DEVICES += R37
@@ -1121,6 +1123,28 @@ define Device/cudy_m3000-v1
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
 endef
 TARGET_DEVICES += cudy_m3000-v1
+
+define Device/cudy_m3000-v2-yt8821
+  DEVICE_VENDOR := Cudy
+  DEVICE_MODEL := M3000
+  DEVICE_VARIANT := v2 with Motorcomm YT8821
+  DEVICE_DTS := mt7981b-cudy-m3000-v2-yt8821
+  DEVICE_DTS_DIR := ../dts
+  SUPPORTED_DEVICES += R37
+  DEVICE_DTS_LOADADDR := 0x44000000
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  IMAGE_SIZE := 65536k
+  KERNEL_IN_UBI := 1
+  KERNEL := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  IMAGES := sysupgrade.bin
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware kmod-phy-motorcomm
+endef
+TARGET_DEVICES += cudy_m3000-v2-yt8821
 
 define Device/cudy_re3000-v1
   DEVICE_VENDOR := Cudy
@@ -1882,6 +1906,7 @@ define Device/mediatek_mt7981-rfb
 	mt7981-rfb-spim-nor \
 	mt7981-rfb-spim-nand \
 	mt7981-rfb-spim-nand-nmbm \
+	mt7981-rfb-sfp-eth1 \
 	mt7981-rfb-mxl-2p5g-phy-eth1 \
 	mt7981-rfb-mxl-2p5g-phy-swp5 \
 	mt7981-spidev
@@ -1907,8 +1932,10 @@ define Device/mediatek_mt7986a-rfb
   DEVICE_MODEL := MT7986A rfb (DT-overlay)
   DEVICE_DTS := mt7986a-rfb
   DEVICE_DTS_OVERLAY:= \
+	mt7986-sfp-eth1 \
 	mt7986-spim-nand \
 	mt7986-spim-nand-nmbm \
+	mt7986-spim-nor \
 	mt7986-spidev
   DEVICE_DTS_DIR := $(DTS_DIR)/
   DEVICE_DTC_FLAGS := --pad 4096
@@ -1932,8 +1959,10 @@ define Device/mediatek_mt7986b-rfb
   DEVICE_MODEL := MT7986B rfb (DT-overlay)
   DEVICE_DTS := mt7986b-rfb
   DEVICE_DTS_OVERLAY:= \
+	mt7986-sfp-eth1 \
 	mt7986-spim-nand \
 	mt7986-spim-nand-nmbm \
+	mt7986-spim-nor \
 	mt7986-spidev
   DEVICE_DTS_DIR := $(DTS_DIR)/
   DEVICE_DTC_FLAGS := --pad 4096
