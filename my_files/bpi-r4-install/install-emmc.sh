@@ -1,12 +1,13 @@
 #!/bin/sh
-# install-emmc.sh — Install OpenWrt to eMMC from USB flash drive
+# install-emmc.sh — Install OpenWrt to eMMC
 # Must be run from NAND rescue system only!
 
 set -e
 
-EMMC_IMG="emmc-img.bin"
+EMMC_IMG="/tmp/emmc-img.bin"
 EMMC_DEV="/dev/mmcblk0"
 EMMC_BOOT="/dev/mmcblk0boot0"
+EMMC_IMG_URL="https://github.com/woziwrt/bpi-r4-rescue/releases/download/rescue-latest/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin"
 
 # 1. Check boot media
 echo ">>> Checking boot media..."
@@ -30,45 +31,32 @@ if [ ! -b "$EMMC_DEV" ]; then
 fi
 echo "    OK — $EMMC_DEV found"
 
-# 3. Detect USB — find mount point
-echo ">>> Looking for USB flash drive..."
-USB_MOUNT=""
-for dev in /dev/sd*1; do
-    [ -b "$dev" ] || continue
-    MP=$(mount | grep "^$dev " | awk '{print $3}')
-    if [ -n "$MP" ]; then
-        USB_MOUNT="$MP"
-        echo "    OK — $dev mounted at $USB_MOUNT"
-        break
-    fi
-done
-
-if [ -z "$USB_MOUNT" ]; then
-    # Try manual mount
-    for dev in /dev/sd*1; do
-        [ -b "$dev" ] || continue
-        mkdir -p /mnt/usb
-        if mount "$dev" /mnt/usb 2>/dev/null; then
-            USB_MOUNT="/mnt/usb"
-            echo "    OK — $dev mounted at $USB_MOUNT"
-            break
-        fi
-    done
+# 3. Network check + info
+echo ""
+echo ">>> Network check..."
+echo "    INFO: Internet connection required to download emmc-img.bin (~103MB)"
+echo "    INFO: Make sure ethernet cable is connected before continuing"
+echo ""
+printf "Is ethernet connected? [yes/no]: "
+read NET_CONFIRM
+if [ "$NET_CONFIRM" != "yes" ]; then
+    echo "    INFO: Connect ethernet and run the script again"
+    echo "    INFO: Alternatively, place emmc-img.bin on a USB flash drive"
+    exit 0
 fi
-
-if [ -z "$USB_MOUNT" ]; then
-    echo "ERROR: No USB flash drive found!"
+if ! ping -c 1 -W 3 github.com > /dev/null 2>&1; then
+    echo "ERROR: No network connectivity — check ethernet cable and try again"
     exit 1
 fi
+echo "    OK — network available"
 
-# 4. Check image file
-echo ">>> Checking $EMMC_IMG..."
-if [ ! -f "$USB_MOUNT/$EMMC_IMG" ]; then
-    echo "ERROR: $EMMC_IMG not found on $USB_MOUNT!"
-    exit 1
-fi
-IMG_SIZE=$(ls -lh "$USB_MOUNT/$EMMC_IMG" | awk '{print $5}')
-echo "    OK — $EMMC_IMG found ($IMG_SIZE)"
+# 4. Download emmc-img.bin
+echo ">>> Downloading emmc-img.bin from GitHub (~103MB)..."
+wget -O "$EMMC_IMG" "$EMMC_IMG_URL"
+echo "    OK — downloaded to $EMMC_IMG"
+
+# 5. USB fallback info (if download fails)
+# If wget fails, set -e will exit — user can retry with USB
 
 # 5. Final warning
 echo ""
@@ -79,20 +67,21 @@ echo ""
 printf "Continue? [yes/no]: "
 read CONFIRM
 if [ "$CONFIRM" != "yes" ]; then
+    rm -f "$EMMC_IMG"
     echo "Aborted."
     exit 0
 fi
 
 # 6. Write image to eMMC
-echo ">>> Writing $EMMC_IMG to $EMMC_DEV..."
-dd if="$USB_MOUNT/$EMMC_IMG" of="$EMMC_DEV" bs=1M
+echo ">>> Writing emmc-img.bin to $EMMC_DEV..."
+dd if="$EMMC_IMG" of="$EMMC_DEV" bs=1M
 sync
 echo "    OK — image written"
 
 # 7. Write BL2 to boot partition
 echo ">>> Writing BL2 to boot partition..."
 echo 0 > /sys/block/mmcblk0boot0/force_ro
-dd if="$USB_MOUNT/$EMMC_IMG" of="$EMMC_BOOT" bs=512 skip=34 count=512
+dd if="$EMMC_IMG" of="$EMMC_BOOT" bs=512 skip=34 count=512
 sync
 echo "    OK — BL2 written"
 
@@ -101,7 +90,10 @@ echo ">>> Setting eMMC boot partition..."
 mmc bootpart enable 1 1 "$EMMC_DEV"
 echo "    OK"
 
-# 9. Done
+# 9. Cleanup
+rm -f "$EMMC_IMG"
+
+# 10. Done
 echo ""
 echo "=== Installation complete ==="
 echo ""

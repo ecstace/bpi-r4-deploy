@@ -1,8 +1,16 @@
-name: Build BPI-R4 Rescue
+name: Build BPI-R4
 
 on:
   workflow_dispatch:
     inputs:
+      target:
+        description: 'Target media'
+        required: true
+        default: 'sd'
+        type: choice
+        options:
+          - sd
+          - emmc
       openwrt_commit:
         description: 'OpenWrt commit hash (leave empty for latest)'
         required: false
@@ -11,6 +19,14 @@ on:
         description: 'mtk-openwrt-feeds commit hash (leave empty for latest)'
         required: false
         default: ''
+      dry_run:
+        description: 'Dry run (skip build, test WF logic only)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 permissions:
   contents: write
@@ -24,6 +40,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Free disk space on runner
+        if: inputs.dry_run == 'false'
         run: |
           sudo rm -rf \
             "$AGENT_TOOLSDIRECTORY" \
@@ -43,6 +60,7 @@ jobs:
           df -h
 
       - name: Install build dependencies
+        if: inputs.dry_run == 'false'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -50,58 +68,77 @@ jobs:
             gettext libncurses-dev libssl-dev python3-distutils python3-setuptools \
             rsync swig unzip zlib1g-dev file wget libelf-dev ccache git
 
-      - name: Show disk space
-        run: df -h
-
       - name: Run builder script
+        if: inputs.dry_run == 'false'
         run: |
-          chmod +x ./bpi-r4-openwrt-builder.rescue.sh
+          chmod +x ./bpi-r4-openwrt-builder.sh
           OPENWRT_COMMIT="${{ github.event.inputs.openwrt_commit }}" \
           MTK_COMMIT="${{ github.event.inputs.mtk_commit }}" \
-          ./bpi-r4-openwrt-builder.rescue.sh
+          ./bpi-r4-openwrt-builder.sh
 
-      - name: List built images
-        if: always()
+      - name: Simulate build output (dry run)
+        if: inputs.dry_run == 'true'
         run: |
-          ls -R openwrt/bin/targets || true
+          mkdir -p openwrt/bin/targets/mediatek/filogic
+          touch openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-sdcard.img.gz
+          touch openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin
+          touch openwrt/bin/targets/mediatek/filogic/config.buildinfo
+          echo "dry-run" > openwrt/bin/targets/mediatek/filogic/sha256sums
 
       - name: Generate sha256sums
-        if: success()
+        if: inputs.dry_run == 'false'
         run: |
           cd openwrt/bin/targets/mediatek/filogic
           sha256sum \
-            openwrt-mediatek-filogic-bananapi_bpi-r4-snand-img.bin \
-            openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin \
             openwrt-mediatek-filogic-bananapi_bpi-r4-sdcard.img.gz \
+            openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin \
             > sha256sums
 
-      - name: Set tag name
+      - name: Set tag and release name
         id: vars
         run: |
-          if [ -n "${{ github.event.inputs.openwrt_commit }}" ]; then
-            echo "tag_name=rescue-${{ github.event.inputs.openwrt_commit }}" >> "$GITHUB_OUTPUT"
-            echo "release_name=BPI-R4 Rescue (${{ github.event.inputs.openwrt_commit }})" >> "$GITHUB_OUTPUT"
+          TARGET="${{ github.event.inputs.target }}"
+          COMMIT="${{ github.event.inputs.openwrt_commit }}"
+          if [ -n "$COMMIT" ]; then
+            echo "tag_name=bpi-r4-${TARGET}-${COMMIT}" >> "$GITHUB_OUTPUT"
+            echo "release_name=BPI-R4 ${TARGET} (${COMMIT})" >> "$GITHUB_OUTPUT"
           else
-            echo "tag_name=rescue-latest" >> "$GITHUB_OUTPUT"
-            echo "release_name=BPI-R4 Rescue (latest)" >> "$GITHUB_OUTPUT"
+            echo "tag_name=bpi-r4-${TARGET}-latest" >> "$GITHUB_OUTPUT"
+            echo "release_name=BPI-R4 ${TARGET} (latest)" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create GitHub Release
-        if: success()
+      - name: Create GitHub Release — SD
+        if: github.event.inputs.target == 'sd'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.tag_name }}
           name: ${{ steps.vars.outputs.release_name }}
           body: |
-            Built from OpenWrt commit: ${{ github.event.inputs.openwrt_commit || 'latest' }}
+            Target: SD card
+            OpenWrt commit: ${{ github.event.inputs.openwrt_commit || 'latest' }}
             mtk-openwrt-feeds commit: ${{ github.event.inputs.mtk_commit || 'latest' }}
-          draft: false
-          prerelease: false
           files: |
-            openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-snand-img.bin
-            openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin
             openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-sdcard.img.gz
             openwrt/bin/targets/mediatek/filogic/sha256sums
+            openwrt/bin/targets/mediatek/filogic/config.buildinfo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release — eMMC
+        if: github.event.inputs.target == 'emmc'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag_name }}
+          name: ${{ steps.vars.outputs.release_name }}
+          body: |
+            Target: eMMC
+            OpenWrt commit: ${{ github.event.inputs.openwrt_commit || 'latest' }}
+            mtk-openwrt-feeds commit: ${{ github.event.inputs.mtk_commit || 'latest' }}
+          files: |
+            rescue/bpi-r4-rescue-sdcard.img.gz
+            openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin
+            openwrt/bin/targets/mediatek/filogic/sha256sums
+            openwrt/bin/targets/mediatek/filogic/config.buildinfo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -111,6 +148,8 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
+            const target = "${{ github.event.inputs.target }}";
+            const tagName = `bpi-r4-${target}-latest`;
 
             const releases = await github.rest.repos.listReleases({
               owner,
@@ -118,22 +157,15 @@ jobs:
               per_page: 100
             });
 
-            const autoReleases = releases.data.filter(
-              rel => rel.tag_name === 'rescue-latest'
-            );
+            const filtered = releases.data.filter(rel => rel.tag_name === tagName);
+            filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            autoReleases.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-            const toDelete = autoReleases.slice(1);
-
-            for (const rel of toDelete) {
+            for (const rel of filtered.slice(1)) {
               await github.rest.repos.deleteRelease({
                 owner,
                 repo,
                 release_id: rel.id
-              }).catch(e => {
-                console.log(`Failed to delete release ${rel.id}: ${e.message}`);
-              });
+              }).catch(e => console.log(`Failed to delete release ${rel.id}: ${e.message}`));
             }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
