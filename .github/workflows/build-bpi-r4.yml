@@ -86,12 +86,20 @@ jobs:
           chmod +x ./bpi-r4-openwrt-builder.sh
           ./bpi-r4-openwrt-builder.sh
 
+      - name: Prepare NVMe artifacts
+        run: |
+          cd openwrt/bin/targets/mediatek/filogic
+          # bpi-r4.itb = kernel FIT image pro NVMe boot partition
+          cp openwrt-mediatek-filogic-bananapi_bpi-r4-squashfs-sysupgrade.itb bpi-r4.itb
+
       - name: Generate sha256sums
         run: |
           cd openwrt/bin/targets/mediatek/filogic
           sha256sum \
             openwrt-mediatek-filogic-bananapi_bpi-r4-sdcard.img.gz \
             openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin \
+            openwrt-mediatek-filogic-bananapi_bpi-r4-nvme-img.bin \
+            bpi-r4.itb \
             > sha256sums
 
       - name: Create GitHub Release
@@ -105,6 +113,8 @@ jobs:
             rescue/bpi-r4-rescue-sdcard.img.gz
             openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-sdcard.img.gz
             openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin
+            openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-nvme-img.bin
+            openwrt/bin/targets/mediatek/filogic/bpi-r4.itb
             openwrt/bin/targets/mediatek/filogic/sha256sums
             openwrt/bin/targets/mediatek/filogic/config.buildinfo
         env:
