@@ -3,12 +3,8 @@ name: Build BPI-R4
 on:
   workflow_dispatch:
     inputs:
-      openwrt_commit:
-        description: 'OpenWrt commit hash (leave empty for latest)'
-        required: false
-        default: ''
-      mtk_commit:
-        description: 'mtk-openwrt-feeds commit hash (leave empty for latest)'
+      repo_commit:
+        description: 'Commit hash of this repository (leave empty for latest)'
         required: false
         default: ''
 
@@ -25,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.repo_commit || github.sha }}
 
       - name: Delete all existing releases and tags
         uses: actions/github-script@v7
@@ -86,8 +84,6 @@ jobs:
       - name: Run builder script
         run: |
           chmod +x ./bpi-r4-openwrt-builder.sh
-          OPENWRT_COMMIT="${{ github.event.inputs.openwrt_commit }}" \
-          MTK_COMMIT="${{ github.event.inputs.mtk_commit }}" \
           ./bpi-r4-openwrt-builder.sh
 
       - name: Generate sha256sums
@@ -104,8 +100,7 @@ jobs:
           tag_name: rescue-latest
           name: BPI-R4 rescue (latest)
           body: |
-            OpenWrt commit: ${{ github.event.inputs.openwrt_commit || 'latest' }}
-            mtk-openwrt-feeds commit: ${{ github.event.inputs.mtk_commit || 'latest' }}
+            Repository commit: ${{ github.event.inputs.repo_commit || github.sha }}
           files: |
             openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-sdcard.img.gz
             openwrt/bin/targets/mediatek/filogic/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin

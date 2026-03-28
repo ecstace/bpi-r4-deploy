@@ -5,18 +5,10 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-if [ -n "$OPENWRT_COMMIT" ] && [ "$OPENWRT_COMMIT" != "latest" ]; then
-    cd openwrt; git checkout "$OPENWRT_COMMIT"; cd -;
-else
-    cd openwrt; git checkout f505120278fdb752586853f4df7482150d0add3b; cd -;  #ipq40xx: fix art partition name WHW03 V1
-fi
+cd openwrt; git checkout f505120278fdb752586853f4df7482150d0add3b; cd -;  #ipq40xx: fix art partition name WHW03 V1
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-if [ -n "$MTK_COMMIT" ] && [ "$MTK_COMMIT" != "latest" ]; then
-    cd mtk-openwrt-feeds; git checkout "$MTK_COMMIT"; cd -;
-else
-    cd mtk-openwrt-feeds; git checkout 07ef2962013b19a4a1e9f8c34a21c1e90be691ce; cd -;  #[MAC80211][WiFi6/7/8][app][Fix iwpriv/ated script]
-fi
+cd mtk-openwrt-feeds; git checkout 07ef2962013b19a4a1e9f8c34a21c1e90be691ce; cd -;  #[MAC80211][WiFi6/7/8][app][Fix iwpriv/ated script]
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 \cp -r my_files/100-wifi-mt76-mt7996-Use-tx_power-from-default-fw-if-EEP.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/kernel/mt76/patches
