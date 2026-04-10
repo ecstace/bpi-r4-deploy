@@ -5,10 +5,10 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-cd openwrt; git checkout 865229fad90af85989bbcdd294424a6f2d2723b3; cd -;		#mediatek: filogic: fix EAX17 rootfs hash in FIT node for per-device rootfs builds
+cd openwrt; git checkout 1f535037b19731cd37512ed00b648a35b40ad13c; cd -;		#qualcommax: ipq807x: mx5300: use existing aliases node
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-cd mtk-openwrt-feeds; git checkout e703a4ca118969d9d3f0ee2d10d61599c0db7148; cd -;	#[openwrt-24][MAC80211][Change mac80211 configuration]
+cd mtk-openwrt-feeds; git checkout 79b79ece6267ea64db5dab853d4576d9b9c11889; cd -;	#[kernel][common][eth][Refactor the check condition from PSE_FC to GDM_RXFC in the QDMA Tx hang monitor]
 
 #\cp -r my_files/feed_revision mtk-openwrt-feeds/autobuild/unified/
 
