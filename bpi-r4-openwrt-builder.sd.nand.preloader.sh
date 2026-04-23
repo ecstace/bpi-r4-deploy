@@ -5,11 +5,11 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-cd openwrt; git checkout 00dcdd7451487dfb63c6c3bbd649a547c76e1a13; cd -;		#firmware: Add support for Airoha EN7581/AN7583 NPU variant firmware
+cd openwrt; git checkout 6cbb072b57e9d72d07097902d975f8a13b768e72; cd -;		#qualcommax: ipq50xx: ax6000: enable pcie1 for QCA9887
 
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-cd mtk-openwrt-feeds; git checkout c55064d7aa0125264b8e42e1bdb045f8da96f29e; cd -;	#[kernel-6.12][mt7988][pcie][Fix MT7988 4-PCIE mode]
+cd mtk-openwrt-feeds; git checkout 206c1b08e4d9d7d6dcc9be0ac34ea60320f6ca0d; cd -;	#6cbb072b57e9d72d07097902d975f8a13b768e72
 #cd mtk-openwrt-feeds; git checkout 95d10b2875cde36924023380ac098dd5664dcdf3; cd -;	#[openwrt-25][common][doc][Update documentation for OpenWrt 25.12]
 
 cd openwrt
