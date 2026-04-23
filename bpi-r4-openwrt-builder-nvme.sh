@@ -5,17 +5,17 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-cd openwrt; git checkout 865229fad90af85989bbcdd294424a6f2d2723b3; cd -;		#mediatek: filogic: fix EAX17 rootfs hash in FIT node for per-device rootfs builds
+cd openwrt; git checkout 6cbb072b57e9d72d07097902d975f8a13b768e72; cd -;		#qualcommax: ipq50xx: ax6000: enable pcie1 for QCA9887
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-cd mtk-openwrt-feeds; git checkout e703a4ca118969d9d3f0ee2d10d61599c0db7148; cd -;	#[openwrt-24][MAC80211][Change mac80211 configuration]
+cd mtk-openwrt-feeds; git checkout 206c1b08e4d9d7d6dcc9be0ac34ea60320f6ca0d; cd -;	#[kernel-6.12][mt7987/88][eth][Add extended MIB counters for NETSYSv3]
 
 #\cp -r my_files/feed_revision mtk-openwrt-feeds/autobuild/unified/
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 
 ### tx_power check Ivan Mironov's patch - for defective BE14 boards with defective eeprom flash
-\cp -r my_files/100-wifi-mt76-mt7996-Use-tx_power-from-default-fw-if-EEP.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/kernel/mt76/patches
+#\cp -r my_files/100-wifi-mt76-mt7996-Use-tx_power-from-default-fw-if-EEP.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/kernel/mt76/patches
 
 cd openwrt
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt798x_rfb-wifi7_nic prepare
