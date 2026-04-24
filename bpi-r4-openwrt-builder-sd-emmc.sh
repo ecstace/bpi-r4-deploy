@@ -8,7 +8,7 @@ git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
 cd openwrt; git checkout 6cbb072b57e9d72d07097902d975f8a13b768e72; cd -;		#qualcommax: ipq50xx: ax6000: enable pcie1 for QCA9887
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-cd mtk-openwrt-feeds; git checkout 206c1b08e4d9d7d6dcc9be0ac34ea60320f6ca0d; cd -;	#[kernel-6.12][mt7987/88][eth][Add extended MIB counters for NETSYSv3]
+cd mtk-openwrt-feeds; git checkout 35490cec6a2e5982532935fb0a1c884f7c4efdb0; cd -;	#[HIGH][kernel/kernel-6.12][common][eth][Add HW LRO VLAN support including switch SP tag]
 
 #\cp -r my_files/feed_revision mtk-openwrt-feeds/autobuild/unified/
 
