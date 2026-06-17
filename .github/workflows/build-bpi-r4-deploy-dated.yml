@@ -21,8 +21,8 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  OPENWRT_COMMIT: "bbce1cedcc52d60b1d41ece746bc6bf77b64b7f4"
-  MTK_COMMIT: "2812cb84f04910f404bfa5b063be11db2f03e3d2"
+  OPENWRT_COMMIT: "44ee26c13fc4ede17057b53a266e7072dfd9a7f0"
+  MTK_COMMIT: "fd5feeb0ab31f0302c18b72632f44434a4a5d6e9"
 
 jobs:
   build:
