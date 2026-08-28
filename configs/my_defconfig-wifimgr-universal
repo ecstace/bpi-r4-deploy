@@ -537,3 +537,5 @@ CONFIG_PACKAGE_luci-app-upnp=y
 CONFIG_PACKAGE_luci-app-wol=y
 CONFIG_PACKAGE_tailscale=y
 CONFIG_PACKAGE_zerotier=y
+CONFIG_PACKAGE_kmod-npu=y
+CONFIG_MTK_NPU_L4S=y
