@@ -17,7 +17,7 @@ cd openwrt; git checkout ${OPENWRT_COMMIT}; cd -;
 # 2026-07-06: migrated git01 -> main (git01 frozen; MTK recommends main). Single source of truth.
 # 2026-08-06: bump to the lab universal-new pin (see header).
 git clone --branch main https://github.com/mediatek/mtk-openwrt-feeds mtk-openwrt-feeds
-( cd mtk-openwrt-feeds && git checkout ${MTK_COMMIT:-645a8a743c5735bca6dedef9b5dc541849ca5f73} )
+( cd mtk-openwrt-feeds && git checkout ${MTK_COMMIT:-2ca498c795e08c4feacbca6da0c44e9448b0d2a8} )
 
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
