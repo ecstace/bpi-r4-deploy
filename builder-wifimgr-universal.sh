@@ -6,7 +6,7 @@ set -euo pipefail
 # OpenWrt 6dead286 / MTK 822c2f06):
 #   OpenWrt:  4d0fec5a4845ba166203a782d08217b3f1cf2af9  (openwrt-25.12)
 #   MTK SDK:  3a4e2a2511af93cea1ca43205a02362423882b7c  (main)
-OPENWRT_COMMIT=${OPENWRT_COMMIT:-6ad13aa7290135ac6e1778be95d11b3034b9a416}
+OPENWRT_COMMIT=${OPENWRT_COMMIT:-0110eab5aa100fe7334bcca50398b632869aa16a}
 
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
@@ -17,7 +17,7 @@ cd openwrt; git checkout ${OPENWRT_COMMIT}; cd -;
 # 2026-07-06: migrated git01 -> main (git01 frozen; MTK recommends main). Single source of truth.
 # 2026-08-06: bump to the lab universal-new pin (see header).
 git clone --branch main https://github.com/mediatek/mtk-openwrt-feeds mtk-openwrt-feeds
-( cd mtk-openwrt-feeds && git checkout ${MTK_COMMIT:-2ca498c795e08c4feacbca6da0c44e9448b0d2a8} )
+( cd mtk-openwrt-feeds && git checkout ${MTK_COMMIT:-edd529bbe4c0b06929f3f42ed8ce7b815888c04f} )
 
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
