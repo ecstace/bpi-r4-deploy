@@ -31,7 +31,7 @@ git clone --branch main https://github.com/mediatek/mtk-openwrt-feeds mtk-openwr
 # a jejich verze ma navic druhy commit (stale skb->prev po async crypto). Ponechani
 # naseho by patch aplikovalo DVAKRAT a build by spadl.
 #\cp -r my_files/999-fix-00-xfrm-propagate-einprogress.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
-\cp -r my_files/0264-wpa_s-add-btwt-join-command.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/network/services/hostapd/patches/0264-wpa_s-add-btwt-join-command.patch
+#\cp -r my_files/0264-wpa_s-add-btwt-join-command.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/network/services/hostapd/patches/0264-wpa_s-add-btwt-join-command.patch
 
 ### tx_power check Ivan Mironov's patch - for defective BE14 boards with defective eeprom flash
 #\cp -r my_files/100-wifi-mt76-mt7996-Use-tx_power-from-default-fw-if-EEP.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/kernel/mt76/patches
